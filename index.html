@@ -4,313 +4,1200 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FinanBot - Assistente Financeiro</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        /* ================== CSS ================== */
+        :root {
+            --primary-gradient: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            --secondary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --success-gradient: linear-gradient(135deg, #56ab2f 0%, #a8e6cf 100%);
+            --dark-gradient: linear-gradient(135deg, #134e5e 0%, #71b280 100%);
+            --glass-bg: rgba(255, 255, 255, 0.15);
+            --glass-border: rgba(255, 255, 255, 0.2);
+            --text-primary: #2c3e50;
+            --text-secondary: #34495e;
+            --shadow-soft: 0 8px 32px rgba(31, 38, 135, 0.37);
+            --shadow-hover: 0 15px 35px rgba(31, 38, 135, 0.5);
+            --border-radius: 20px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
         * {
-            margin: 0;
-            padding: 0;
             box-sizing: border-box;
-            font-family: 'Poppins', sans-serif;
         }
 
         body {
-            background: #f5f5f5;
-            color: #333;
-            line-height: 1.5;
-            padding: 20px;
+            font-family: 'Poppins', sans-serif;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
         }
 
-        h4 {
-            font-weight: 600;
-        }
-
-        /* Formulário */
-        #financeForm {
-            background: #ffffff;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            margin-bottom: 30px;
-        }
-
-        #financeForm input,
-        #financeForm select,
-        #financeForm button {
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
             width: 100%;
-            padding: 10px 12px;
-            margin-bottom: 12px;
-            border: 1px solid #ccc;
-            border-radius: 6px;
-            font-size: 14px;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 80%, rgba(17, 153, 142, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, rgba(56, 239, 125, 0.2) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: -1;
         }
 
-        #financeForm button {
-            background-color: #4CAF50;
-            color: #fff;
-            border: none;
-            cursor: pointer;
-            font-weight: 600;
-            transition: background-color 0.3s ease;
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
         }
 
-        #financeForm button:hover {
-            background-color: #45a049;
-        }
-
-        /* Result container */
-        #resultContainer {
-            background: #fff;
-            padding: 15px 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        .header {
+            text-align: center;
+            background: var(--glass-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--glass-border);
+            padding: 40px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-soft);
             margin-bottom: 30px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(255,255,255,0.1), transparent);
+            transform: rotate(45deg);
+            animation: shimmer 3s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+            100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+        }
+
+        .header h1 {
+            color: white;
+            margin: 0;
+            font-size: 3rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #fff 0%, #f0f8ff 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 0 4px 8px rgba(0,0,0,0.3);
+            position: relative;
+            z-index: 1;
+        }
+
+        .header p {
+            color: rgba(255,255,255,0.9);
+            margin: 15px 0 0 0;
+            font-size: 1.2rem;
+            font-weight: 500;
+            position: relative;
+            z-index: 1;
+        }
+
+        .chat-container {
+            background: var(--glass-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--border-radius);
+            padding: 40px;
+            box-shadow: var(--shadow-soft);
+            margin-bottom: 30px;
+            position: relative;
+        }
+
+        .chat-message {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            border-left: 4px solid var(--success-gradient);
+            padding: 25px;
+            border-radius: 16px;
+            margin-bottom: 30px;
+            font-size: 1.1rem;
+            color: var(--text-primary);
+            box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .chat-message::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: var(--success-gradient);
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .form-group label {
+            color: white;
+            font-weight: 600;
+            margin-bottom: 10px;
+            font-size: 0.95rem;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .form-group input,
+        .form-group select {
+            padding: 18px 20px;
+            border: 2px solid rgba(255,255,255,0.2);
+            border-radius: 16px;
+            font-size: 1rem;
+            font-family: 'Poppins', sans-serif;
+            background: rgba(255,255,255,0.9);
+            backdrop-filter: blur(10px);
+            transition: var(--transition);
+            color: var(--text-primary);
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: rgba(255,255,255,0.6);
+            box-shadow: 0 0 0 4px rgba(255,255,255,0.2);
+            transform: translateY(-2px);
+        }
+
+        .form-group input::placeholder {
+            color: var(--text-secondary);
+        }
+
+        .submit-btn {
+            background: var(--secondary-gradient);
+            color: white;
+            border: none;
+            padding: 20px 40px;
+            border-radius: 16px;
+            font-size: 1.2rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: var(--transition);
+            width: 100%;
+            margin-top: 30px;
+            box-shadow: var(--shadow-soft);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .submit-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: var(--transition);
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-hover);
+        }
+
+        .submit-btn:hover::before {
+            left: 100%;
+        }
+
+        .result-container {
+            background: var(--success-gradient);
+            color: white;
+            padding: 30px;
+            border-radius: var(--border-radius);
+            margin: 30px 0;
             display: none;
+            box-shadow: var(--shadow-soft);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .result-container::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: var(--success-gradient);
+            border-radius: var(--border-radius);
+            z-index: -1;
+        }
+
+        .result-container h3 {
+            margin: 0 0 20px 0;
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .result-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
         }
 
         .result-item {
-            margin-bottom: 8px;
+            background: rgba(255,255,255,0.2);
+            backdrop-filter: blur(10px);
+            padding: 18px;
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.3);
+            transition: var(--transition);
         }
 
-        /* Purchase History */
+        .result-item:hover {
+            background: rgba(255,255,255,0.3);
+            transform: translateY(-2px);
+        }
+
+        .result-item strong {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
         .history-container {
-            margin-bottom: 30px;
+            margin-top: 40px;
+        }
+
+        .purchase-history {
+            max-height: 500px;
+            overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(255,255,255,0.3) transparent;
+        }
+
+        .purchase-history::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .purchase-history::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .purchase-history::-webkit-scrollbar-thumb {
+            background: rgba(255,255,255,0.3);
+            border-radius: 3px;
+        }
+
+        .empty-history {
+            text-align: center;
+            color: rgba(255,255,255,0.8);
+            font-style: italic;
+            padding: 60px 20px;
+            font-size: 1.1rem;
         }
 
         .purchase-item {
-            background: #fff;
-            padding: 15px 20px;
-            border-radius: 8px;
-            margin-bottom: 15px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            background: rgba(255,255,255,0.9);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 16px;
+            padding: 25px;
+            margin-bottom: 20px;
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .purchase-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: var(--primary-gradient);
+        }
+
+        .purchase-item:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-hover);
+            background: rgba(255,255,255,0.95);
         }
 
         .purchase-header {
             display: flex;
             justify-content: space-between;
-            margin-bottom: 10px;
+            align-items: center;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+            gap: 10px;
         }
 
         .purchase-title {
+            font-size: 1.2rem;
             font-weight: 600;
+            color: #2c3e50;
+            margin: 0;
+        }
+
+        .purchase-value {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #27ae60;
         }
 
         .purchase-details {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
             gap: 10px;
-            margin-bottom: 10px;
+            margin-bottom: 15px;
+        }
+
+        .purchase-detail {
+            display: flex;
+            flex-direction: column;
         }
 
         .purchase-detail-label {
-            font-size: 12px;
-            color: #666;
+            font-size: 0.85rem;
+            color: #6c757d;
+            font-weight: 500;
+            margin-bottom: 2px;
         }
 
         .purchase-detail-value {
-            font-size: 14px;
+            font-size: 0.95rem;
+            color: #2c3e50;
             font-weight: 500;
         }
 
         .purchase-installments {
-            font-weight: 600;
-            margin-bottom: 10px;
+            background: #27ae60;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: 500;
         }
 
         .delete-btn {
-            background-color: #ff4d4d;
-            color: #fff;
+            background: var(--secondary-gradient);
+            color: white;
             border: none;
-            padding: 8px 12px;
-            border-radius: 6px;
+            padding: 10px 20px;
+            border-radius: 12px;
+            font-size: 0.9rem;
+            font-weight: 600;
             cursor: pointer;
-            font-size: 14px;
-            transition: background-color 0.3s ease;
+            transition: var(--transition);
+            margin-top: 15px;
+            box-shadow: 0 4px 12px rgba(245, 87, 108, 0.3);
         }
 
         .delete-btn:hover {
-            background-color: #e04343;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(245, 87, 108, 0.4);
         }
 
-        /* Month Summary */
+        .charts-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+            gap: 30px;
+            margin-top: 40px;
+        }
+
+        .chart-block {
+            background: var(--glass-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--glass-border);
+            padding: 35px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-soft);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .chart-block::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--primary-gradient);
+        }
+
+        .chart-block h3 {
+            color: white;
+            margin: 0 0 30px 0;
+            font-size: 1.5rem;
+            font-weight: 700;
+            text-align: center;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .chart-container {
+            position: relative;
+            height: 400px;
+            background: rgba(255,255,255,0.9);
+            border-radius: 12px;
+            padding: 20px;
+            backdrop-filter: blur(10px);
+        }
+
+        .ending-installments-container {
+            margin-top: 30px;
+        }
+
+        .month-summary {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
         .summary-card {
-            background: #fff;
-            padding: 15px 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            background: rgba(255,255,255,0.9);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            padding: 25px;
             margin-bottom: 20px;
+            border: 1px solid rgba(255,255,255,0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .summary-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: var(--success-gradient);
         }
 
         .summary-header {
             display: flex;
             justify-content: space-between;
-            margin-bottom: 12px;
-        }
-
-        .summary-total {
-            font-weight: 600;
-            font-size: 16px;
-        }
-
-        .summary-breakdown {
-            display: flex;
-            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
             flex-wrap: wrap;
             gap: 10px;
         }
 
+        .summary-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #2c3e50;
+            margin: 0;
+        }
+
+        .summary-total {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #27ae60;
+            background: rgba(39, 174, 96, 0.1);
+            padding: 10px 20px;
+            border-radius: 12px;
+        }
+
+        .summary-breakdown {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
         .breakdown-item {
-            background: #f8f8f8;
-            padding: 10px 12px;
-            border-radius: 6px;
-            flex: 1 1 150px;
+            background: rgba(39, 174, 96, 0.1);
+            padding: 15px;
+            border-radius: 12px;
             text-align: center;
+            border: 1px solid rgba(39, 174, 96, 0.2);
         }
 
         .breakdown-label {
-            font-size: 12px;
-            color: #666;
+            font-size: 0.9rem;
+            color: #6c757d;
+            font-weight: 500;
+            margin-bottom: 5px;
         }
 
         .breakdown-value {
+            font-size: 1.1rem;
             font-weight: 600;
-            font-size: 14px;
-            margin: 4px 0;
+            color: #27ae60;
         }
 
-        /* Ending Installments */
+        .ending-installments {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
         .month-group {
-            background: #fff;
-            padding: 15px 20px;
-            border-radius: 8px;
-            margin-bottom: 15px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            margin-bottom: 25px;
         }
 
         .month-header {
+            background: var(--dark-gradient);
+            color: white;
+            padding: 20px 25px;
+            border-radius: 16px 16px 0 0;
+            font-size: 1.2rem;
+            font-weight: 700;
             display: flex;
             justify-content: space-between;
-            font-weight: 600;
-            margin-bottom: 10px;
+            align-items: center;
+            box-shadow: var(--shadow-soft);
         }
 
-        .installment-item {
-            display: flex;
-            justify-content: space-between;
-            padding: 8px 10px;
-            border-bottom: 1px solid #eee;
+        .month-header.current-month {
+            background: var(--success-gradient);
         }
 
-        .installment-name {
+        .month-header.past-month {
+            background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+        }
+
+        .month-total {
+            font-size: 0.95rem;
             font-weight: 500;
         }
 
-        .installment-details {
-            font-size: 12px;
-            color: #555;
+        .installment-list {
+            background: white;
+            border: 1px solid #e9ecef;
+            border-top: none;
+            border-radius: 0 0 12px 12px;
         }
 
-        .status-badge {
-            font-size: 10px;
+        .installment-item {
+            padding: 15px 20px;
+            border-bottom: 1px solid #f8f9fa;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+
+        .installment-item:last-child {
+            border-bottom: none;
+        }
+
+        .installment-item:hover {
+            background: #f8f9fa;
+        }
+
+        .installment-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .installment-name {
             font-weight: 600;
-            padding: 2px 6px;
-            border-radius: 4px;
-            margin-left: 6px;
-            text-transform: uppercase;
+            color: #2c3e50;
+            margin-bottom: 5px;
         }
 
-        .status-current {
-            background-color: #4CAF50;
-            color: #fff;
-        }
-
-        .status-finished {
-            background-color: #ff4d4d;
-            color: #fff;
+        .installment-details {
+            font-size: 0.85rem;
+            color: #34495e;
         }
 
         .installment-value {
             font-weight: 600;
+            color: #27ae60;
+            font-size: 1rem;
         }
 
-        /* Mensagens vazias */
-        .empty-history {
-            padding: 20px;
-            background: #fff;
-            border-radius: 8px;
+        .status-badge {
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-left: 10px;
+        }
+
+        .status-current {
+            background: #27ae60;
+            color: white;
+        }
+
+        .status-finished {
+            background: #6c757d;
+            color: white;
+        }
+
+        .footer {
             text-align: center;
-            color: #555;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            padding: 40px;
+            color: rgba(255,255,255,0.8);
+            font-weight: 500;
+            margin-top: 60px;
+            font-size: 1.1rem;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        @media (max-width: 768px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .charts-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .chart-block {
+                min-width: 0;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
         }
     </style>
 </head>
 <body>
-    <h2>FinanBot - Assistente Financeiro</h2>
+    <div class="container">
+        <div class="header">
+            <h1>💬 FinanBot</h1>
+            <p>Seu assistente financeiro inteligente</p>
+        </div>
 
-    <!-- Formulário -->
-    <form id="financeForm">
-        <input type="text" id="itemName" placeholder="Nome do item" required>
-        <input type="number" step="0.01" id="totalValue" placeholder="Valor total (R$)" required>
-        <input type="text" id="category" placeholder="Categoria" required>
-        <input type="text" id="card" placeholder="Cartão" required>
-        <input type="month" id="purchaseMonth" placeholder="Mês da Compra" required>
-        <input type="number" id="installments" placeholder="Número de parcelas (0 = à vista)" required>
-        <input type="month" id="billClosed" placeholder="Mês da fatura fechada" required>
-        <button type="submit">Adicionar Compra</button>
-    </form>
+        <div class="chat-container">
+            <div class="chat-message">
+                <strong>Olá! 👋 Sou o seu assistente financeiro.</strong><br>
+                Preencha os dados abaixo e eu direi quando termina sua última parcela, além de organizar seus gastos por categoria e cartão!
+            </div>
 
-    <!-- Resultado do lançamento -->
-    <div id="resultContainer">
-        <h3>Compra Registrada</h3>
-        <div id="resultDetails"></div>
+            <form id="financeForm">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="itemName">Nome do Item</label>
+                        <input type="text" id="itemName" required placeholder="Ex: Smartphone Samsung">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="totalValue">Valor Total (R$)</label>
+                        <input type="number" id="totalValue" step="0.01" required placeholder="Ex: 1200.00">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="category">Categoria</label>
+                        <select id="category" required>
+                            <option value="">Selecione uma categoria</option>
+                            <option value="Alimentação">Alimentação</option>
+                            <option value="Transporte">Transporte</option>
+                            <option value="Lazer">Lazer</option>
+                            <option value="Eletrônicos">Eletrônicos</option>
+                            <option value="Outros">Outros</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="card">Cartão Utilizado</label>
+                        <select id="card" required>
+                            <option value="">Selecione um cartão</option>
+                            <option value="Nubank">Nubank</option>
+                            <option value="Banco Do Brasil">Banco Do Brasil</option>
+                            <option value="C6 Bank">C6 Bank</option>
+                            <option value="Havan">Havan</option>
+                            <option value="Cartão Luiza">Cartão Luiza</option>
+                            <option value="Cartão Marisa">Cartão Marisa</option>
+                            <option value="MercadoPago">MercadoPago</option>
+                            <option value="PicPay">PicPay</option>
+                            <option value="Inter">Inter</option>
+                            <option value="Way">Way</option>
+                            <option value="Lojas Renner">Lojas Renner</option>
+                            <option value="Outro">Outro</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="billClosed">Fatura já estava fechada?</label>
+                        <select id="billClosed" required>
+                            <option value="">Selecione uma opção</option>
+                            <option value="sim">Sim</option>
+                            <option value="nao">Não</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="purchaseMonth">Mês da Compra</label>
+                        <input type="month" id="purchaseMonth" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="installments">Número de Parcelas</label>
+                        <select id="installments" required>
+                            <option value="">Selecione uma opção</option>
+                            <option value="0">À Vista</option>
+                            <option value="2">2x</option>
+                            <option value="3">3x</option>
+                            <option value="4">4x</option>
+                            <option value="5">5x</option>
+                            <option value="6">6x</option>
+                            <option value="7">7x</option>
+                            <option value="8">8x</option>
+                            <option value="9">9x</option>
+                            <option value="10">10x</option>
+                            <option value="11">11x</option>
+                            <option value="12">12x</option>
+                            <option value="13">13x</option>
+                            <option value="14">14x</option>
+                            <option value="15">15x</option>
+                            <option value="16">16x</option>
+                            <option value="17">17x</option>
+                            <option value="18">18x</option>
+                            <option value="19">19x</option>
+                            <option value="20">20x</option>
+                            <option value="21">21x</option>
+                            <option value="22">22x</option>
+                            <option value="23">23x</option>
+                            <option value="24">24x</option>
+                            <option value="25">25x</option>
+                            <option value="26">26x</option>
+                            <option value="27">27x</option>
+                            <option value="28">28x</option>
+                            <option value="29">29x</option>
+                            <option value="30">30x</option>
+                            <option value="31">31x</option>
+                            <option value="32">32x</option>
+                            <option value="33">33x</option>
+                            <option value="34">34x</option>
+                            <option value="35">35x</option>
+                            <option value="36">36x</option>
+                            <option value="37">37x</option>
+                            <option value="38">38x</option>
+                            <option value="39">39x</option>
+                            <option value="40">40x</option>
+                            <option value="41">41x</option>
+                            <option value="42">42x</option>
+                            <option value="43">43x</option>
+                            <option value="44">44x</option>
+                            <option value="45">45x</option>
+                            <option value="46">46x</option>
+                            <option value="47">47x</option>
+                            <option value="48">48x</option>
+                        </select>
+                    </div>
+                </div>
+
+                <button type="submit" class="submit-btn">💰 Adicionar ao Controle</button>
+            </form>
+
+            <div id="resultContainer" class="result-container">
+                <h3>📋 Resumo da Compra</h3>
+                <div id="resultDetails" class="result-details"></div>
+            </div>
+        </div>
+
+        <div class="history-container">
+            <div class="chart-block">
+                <h3>📝 Histórico de Compras</h3>
+                <div id="purchaseHistory" class="purchase-history">
+                    <div class="empty-history">
+                        <p>Nenhuma compra registrada ainda. Adicione sua primeira compra acima! 🛍️</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="charts-container">
+            <div class="chart-block">
+                <h3>📊 Gastos por Categoria</h3>
+                <div class="chart-container">
+                    <canvas id="categoryChart"></canvas>
+                </div>
+            </div>
+
+            <div class="chart-block">
+                <h3>💳 Gastos por Cartão</h3>
+                <div class="chart-container">
+                    <canvas id="cardChart"></canvas>
+                </div>
+            </div>
+
+            <div class="chart-block">
+                <h3>📅 Gastos por Mês</h3>
+                <div class="chart-container">
+                    <canvas id="monthChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="ending-installments-container">
+            <div class="chart-block">
+                <h3>💰 Resumo do Mês Atual</h3>
+                <div id="monthSummary" class="month-summary">
+                    <div class="empty-history">
+                        <p>Nenhuma parcela registrada ainda! 📋</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="ending-installments-container">
+            <div class="chart-block">
+                <h3>🎯 Parcelas que Terminam</h3>
+                <div id="endingInstallments" class="ending-installments">
+                    <div class="empty-history">
+                        <p>Nenhuma parcela registrada ainda! 📋</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            FinanBot © 2025 - Simulador de Parcelas Inteligente
+        </div>
     </div>
 
-    <!-- Histórico de Compras -->
-    <div class="history-container" id="purchaseHistory"></div>
-
-    <!-- Resumo Mensal -->
-    <div id="monthSummary"></div>
-
-    <!-- Parcelas que terminam -->
-    <div id="endingInstallments"></div>
-
-    <!-- ================== JS ================== -->
     <script>
-        // ================== Dados e Funções Auxiliares ==================
-        let purchases = JSON.parse(localStorage.getItem('purchases')) || [];
+        // Array para armazenar todas as compras
+        let purchases = JSON.parse(localStorage.getItem('finanbot_purchases')) || [];
 
+        // Dados para os gráficos
+        let categoryData = {
+            'Alimentação': 0,
+            'Transporte': 0,
+            'Lazer': 0,
+            'Eletrônicos': 0,
+            'Outros': 0
+        };
+
+        let cardData = {
+            'Nubank': 0,
+            'Banco Do Brasil': 0,
+            'C6 Bank': 0,
+            'Havan': 0,
+            'Cartão Luiza': 0,
+            'Cartão Marisa': 0,
+            'MercadoPago': 0,
+            'PicPay': 0,
+            'Inter': 0,
+            'Way': 0,
+            'Lojas Renner': 0,
+            'Outro': 0
+        };
+
+        let monthData = {};
+
+        // Função para salvar no localStorage
         function savePurchases() {
-            localStorage.setItem('purchases', JSON.stringify(purchases));
+            localStorage.setItem('finanbot_purchases', JSON.stringify(purchases));
         }
 
-        function parseInstallmentDate(dateStr) {
-            const [year, month] = dateStr.split('-');
-            return new Date(parseInt(year), parseInt(month)-1, 1);
+        // Função para recalcular os dados dos gráficos
+        function recalculateChartData() {
+            // Zera os dados
+            Object.keys(categoryData).forEach(key => categoryData[key] = 0);
+            Object.keys(cardData).forEach(key => cardData[key] = 0);
+            monthData = {};
+
+            // Recalcula com base nas compras salvas
+            purchases.forEach(purchase => {
+                categoryData[purchase.category] += purchase.totalValue;
+                cardData[purchase.card] += purchase.totalValue;
+                
+                // Calcula gastos mensais baseado nas parcelas
+                if (purchase.installments === 0) {
+                    // Compra à vista - todo o valor no mês da compra
+                    const monthKey = getMonthKey(parseInstallmentDate(purchase.firstInstallment), 0);
+                    if (!monthData[monthKey]) {
+                        monthData[monthKey] = 0;
+                    }
+                    monthData[monthKey] += purchase.totalValue;
+                } else {
+                    // Compra parcelada
+                    const installmentValue = purchase.totalValue / purchase.installments;
+                    const startDate = parseInstallmentDate(purchase.firstInstallment);
+                    
+                    for (let i = 0; i < purchase.installments; i++) {
+                        const monthKey = getMonthKey(startDate, i);
+                        if (!monthData[monthKey]) {
+                            monthData[monthKey] = 0;
+                        }
+                        monthData[monthKey] += installmentValue;
+                    }
+                }
+            });
         }
 
+        // Função para converter string de data em objeto Date
+        function parseInstallmentDate(dateString) {
+            const [monthName, year] = dateString.split('/');
+            const months = [
+                'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
+                'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
+            ];
+            const monthIndex = months.indexOf(monthName);
+            return new Date(parseInt(year), monthIndex, 1);
+        }
+
+        // Função para gerar chave do mês
+        function getMonthKey(startDate, monthOffset) {
+            const date = new Date(startDate);
+            date.setMonth(date.getMonth() + monthOffset);
+            const months = [
+                'Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun',
+                'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'
+            ];
+            return `${months[date.getMonth()]}/${date.getFullYear()}`;
+        }
+
+        // Configuração dos gráficos
+        const categoryChart = new Chart(document.getElementById('categoryChart'), {
+            type: 'pie',
+            data: {
+                labels: Object.keys(categoryData),
+                datasets: [{
+                    label: 'Total (R$)',
+                    data: Object.values(categoryData),
+                    backgroundColor: ['#2ecc71', '#e74c3c', '#f39c12', '#3498db', '#9b59b6'],
+                    borderColor: '#ffffff',
+                    borderWidth: 3,
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            padding: 20,
+                            font: {
+                                size: 12
+                            }
+                        }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return context.label + ': R$ ' + Math.round(context.raw).toLocaleString('pt-BR');
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        const cardChart = new Chart(document.getElementById('cardChart'), {
+            type: 'pie',
+            data: {
+                labels: Object.keys(cardData),
+                datasets: [{
+                    label: 'Total (R$)',
+                    data: Object.values(cardData),
+                    backgroundColor: [
+                        '#8e44ad', // Nubank - Roxo
+                        '#f1c40f', // Banco Do Brasil - Amarelo
+                        '#2c3e50', // C6 Bank - Cinza escuro
+                        '#e67e22', // Havan - Laranja
+                        '#e91e63', // Cartão Luiza - Rosa
+                        '#795548', // Cartão Marisa - Marrom
+                        '#00bcd4', // MercadoPago - Ciano
+                        '#4caf50', // PicPay - Verde
+                        '#ff5722', // Inter - Laranja avermelhado
+                        '#607d8b', // Way - Azul acinzentado
+                        '#9c27b0', // Lojas Renner - Roxo
+                        '#34495e'  // Outro - Cinza
+                    ],
+                    borderColor: '#ffffff',
+                    borderWidth: 3,
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            padding: 15,
+                            font: {
+                                size: 11
+                            }
+                        }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return context.label + ': R$ ' + Math.round(context.raw).toLocaleString('pt-BR');
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        const monthChart = new Chart(document.getElementById('monthChart'), {
+            type: 'bar',
+            data: {
+                labels: [],
+                datasets: [{
+                    label: 'Total (R$)',
+                    data: [],
+                    backgroundColor: '#2ecc71',
+                    borderColor: '#27ae60',
+                    borderWidth: 2,
+                    borderRadius: 8,
+                    borderSkipped: false,
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                return 'R$ ' + Math.round(value).toLocaleString('pt-BR');
+                            }
+                        }
+                    },
+                    x: {
+                        ticks: {
+                            maxRotation: 45,
+                            minRotation: 45
+                        }
+                    }
+                }
+            }
+        });
+
+        // Função para calcular as datas das parcelas
         function calculateInstallmentDates(billClosed, installments, purchaseMonth) {
             const [year, month] = purchaseMonth.split('-');
-            const startDate = new Date(parseInt(year), parseInt(month)-1, 1);
-            const firstInstallment = `${startDate.getFullYear()}-${String(startDate.getMonth()+1).padStart(2,'0')}`;
-            const lastInstallmentDate = new Date(startDate);
-            lastInstallmentDate.setMonth(lastInstallmentDate.getMonth() + installments - 1);
-            const lastInstallment = `${lastInstallmentDate.getFullYear()}-${String(lastInstallmentDate.getMonth()+1).padStart(2,'0')}`;
-            return { firstInstallment, lastInstallment };
+            const purchaseDate = new Date(parseInt(year), parseInt(month) - 1, 1);
+            
+            // Se for à vista (0 parcelas), retorna o mês da compra
+            if (installments === 0) {
+                const months = [
+                    'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
+                    'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
+                ];
+                const monthName = `${months[purchaseDate.getMonth()]}/${purchaseDate.getFullYear()}`;
+                return {
+                    firstInstallment: monthName,
+                    lastInstallment: monthName
+                };
+            }
+            
+            let startMonth, startYear;
+            
+            if (billClosed === 'sim') {
+                // Se a fatura já estava fechada, começa no próximo mês
+                startMonth = purchaseDate.getMonth() + 1;
+                startYear = purchaseDate.getFullYear();
+                
+                if (startMonth > 11) {
+                    startMonth = 0;
+                    startYear++;
+                }
+            } else {
+                // Se a fatura não estava fechada, começa no mês da compra
+                startMonth = purchaseDate.getMonth();
+                startYear = purchaseDate.getFullYear();
+            }
+            
+            // Calcula o mês da última parcela
+            let endMonth = startMonth + installments - 1;
+            let endYear = startYear;
+            
+            while (endMonth > 11) {
+                endMonth -= 12;
+                endYear++;
+            }
+            
+            const months = [
+                'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
+                'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
+            ];
+            
+            return {
+                firstInstallment: `${months[startMonth]}/${startYear}`,
+                lastInstallment: `${months[endMonth]}/${endYear}`
+            };
         }
 
-        // ================== Funções de Renderização ==================
+        // Função para atualizar os gráficos
+        function updateCharts() {
+            categoryChart.data.datasets[0].data = Object.values(categoryData);
+            categoryChart.update();
+            
+            cardChart.data.datasets[0].data = Object.values(cardData);
+            cardChart.update();
+            
+            // Ordena os meses cronologicamente
+            const sortedMonths = Object.keys(monthData).sort((a, b) => {
+                const [monthA, yearA] = a.split('/');
+                const [monthB, yearB] = b.split('/');
+                const dateA = new Date(parseInt(yearA), getMonthNumber(monthA));
+                const dateB = new Date(parseInt(yearB), getMonthNumber(monthB));
+                return dateA - dateB;
+            });
+            
+            monthChart.data.labels = sortedMonths;
+            monthChart.data.datasets[0].data = sortedMonths.map(month => monthData[month]);
+            monthChart.update();
+        }
+
+        // Função auxiliar para converter nome do mês em número
+        function getMonthNumber(monthName) {
+            const months = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
+            return months.indexOf(monthName);
+        }
+
+        // Função para renderizar o histórico de compras
         function renderPurchaseHistory() {
             const historyContainer = document.getElementById('purchaseHistory');
+            
             if (purchases.length === 0) {
-                historyContainer.innerHTML = '<div class="empty-history"><p>Nenhuma compra registrada ainda. Adicione sua primeira compra acima! 🛍️</p></div>';
+                historyContainer.innerHTML = `
+                    <div class="empty-history">
+                        <p>Nenhuma compra registrada ainda. Adicione sua primeira compra acima! 🛍️</p>
+                    </div>
+                `;
                 return;
             }
+
             const historyHTML = purchases.map((purchase, index) => `
                 <div class="purchase-item">
                     <div class="purchase-header">
                         <h4 class="purchase-title">${purchase.itemName}</h4>
                         <div class="purchase-value">R$ ${Math.round(purchase.totalValue).toLocaleString('pt-BR')}</div>
                     </div>
+                    
                     <div class="purchase-details">
                         <div class="purchase-detail">
                             <span class="purchase-detail-label">Categoria</span>
@@ -337,25 +1224,35 @@
                             <span class="purchase-detail-value">${purchase.lastInstallment}</span>
                         </div>
                     </div>
+                    
                     <div class="purchase-installments">
                         ${purchase.installments === 0 ? 'À Vista - R$ ' + Math.round(purchase.totalValue).toLocaleString('pt-BR') : purchase.installments + 'x de R$ ' + Math.round(purchase.totalValue/purchase.installments).toLocaleString('pt-BR')}
                     </div>
+                    
                     <button class="delete-btn" onclick="deletePurchase(${index})">🗑️ Excluir</button>
                 </div>
             `).join('');
+
             historyContainer.innerHTML = historyHTML;
         }
 
+        // Função para renderizar resumo do mês atual
         function renderMonthSummary() {
             const summaryContainer = document.getElementById('monthSummary');
+            
             if (purchases.length === 0) {
-                summaryContainer.innerHTML = '<div class="empty-history"><p>Nenhuma parcela registrada ainda! 📋</p></div>';
+                summaryContainer.innerHTML = `
+                    <div class="empty-history">
+                        <p>Nenhuma parcela registrada ainda! 📋</p>
+                    </div>
+                `;
                 return;
             }
 
             const currentDate = new Date();
             const currentMonth = currentDate.getMonth();
             const currentYear = currentDate.getFullYear();
+            
             let totalCurrentMonth = 0;
             let totalEnding = 0;
             let totalContinuing = 0;
@@ -364,6 +1261,7 @@
 
             purchases.forEach(purchase => {
                 if (purchase.installments === 0) {
+                    // Compra à vista
                     const purchaseDate = parseInstallmentDate(purchase.firstInstallment);
                     if (purchaseDate.getMonth() === currentMonth && purchaseDate.getFullYear() === currentYear) {
                         totalCurrentMonth += purchase.totalValue;
@@ -371,16 +1269,22 @@
                         endingCount++;
                     }
                 } else {
+                    // Compra parcelada
                     const installmentValue = purchase.totalValue / purchase.installments;
                     const firstInstallmentDate = parseInstallmentDate(purchase.firstInstallment);
                     const lastInstallmentDate = parseInstallmentDate(purchase.lastInstallment);
+                    
+                    // Verifica se tem parcela no mês atual
                     let hasCurrentMonthInstallment = false;
                     for (let i = 0; i < purchase.installments; i++) {
                         const installmentDate = new Date(firstInstallmentDate);
                         installmentDate.setMonth(installmentDate.getMonth() + i);
+                        
                         if (installmentDate.getMonth() === currentMonth && installmentDate.getFullYear() === currentYear) {
                             hasCurrentMonthInstallment = true;
                             totalCurrentMonth += installmentValue;
+                            
+                            // Verifica se é a última parcela
                             if (lastInstallmentDate.getMonth() === currentMonth && lastInstallmentDate.getFullYear() === currentYear) {
                                 totalEnding += installmentValue;
                                 endingCount++;
@@ -394,7 +1298,10 @@
                 }
             });
 
-            const monthNames = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+            const monthNames = [
+                'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
+                'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
+            ];
 
             const summaryHTML = `
                 <div class="summary-card">
@@ -402,6 +1309,7 @@
                         <h4 class="summary-title">${monthNames[currentMonth]} ${currentYear}</h4>
                         <div class="summary-total">R$ ${Math.round(totalCurrentMonth).toLocaleString('pt-BR')}</div>
                     </div>
+                    
                     <div class="summary-breakdown">
                         <div class="breakdown-item">
                             <div class="breakdown-label">Parcelas que Terminam</div>
@@ -421,117 +1329,267 @@
                     </div>
                 </div>
             `;
+
             summaryContainer.innerHTML = summaryHTML;
         }
 
+        // Função para renderizar parcelas que terminam
         function renderEndingInstallments() {
             const endingContainer = document.getElementById('endingInstallments');
+            
             if (purchases.length === 0) {
-                endingContainer.innerHTML = '<div class="empty-history"><p>Nenhuma parcela registrada ainda! 📋</p></div>';
+                endingContainer.innerHTML = `
+                    <div class="empty-history">
+                        <p>Nenhuma parcela registrada ainda! 📋</p>
+                    </div>
+                `;
                 return;
             }
 
+            // Organiza parcelas por mês de término (apenas parcelas que realmente terminam)
             const endingByMonth = {};
             const currentDate = new Date();
             const currentMonth = currentDate.getMonth();
             const currentYear = currentDate.getFullYear();
 
             purchases.forEach(purchase => {
+                // Só inclui se tiver parcelas (não à vista) ou se for à vista no mês atual
                 if (purchase.installments === 0) {
+                    // Para compras à vista, só mostra se for no mês atual
                     const purchaseDate = parseInstallmentDate(purchase.firstInstallment);
                     if (purchaseDate.getMonth() === currentMonth && purchaseDate.getFullYear() === currentYear) {
                         const monthKey = `${purchaseDate.getFullYear()}-${String(purchaseDate.getMonth() + 1).padStart(2, '0')}`;
+                        
                         if (!endingByMonth[monthKey]) {
-                            endingByMonth[monthKey] = { date: purchaseDate, displayName: purchase.firstInstallment, items: [], total: 0 };
+                            endingByMonth[monthKey] = {
+                                date: purchaseDate,
+                                displayName: purchase.firstInstallment,
+                                items: [],
+                                total: 0
+                            };
                         }
-                        endingByMonth[monthKey].items.push({ name: purchase.itemName, card: purchase.card, installmentValue: purchase.totalValue, totalValue: purchase.totalValue, installments: purchase.installments, isVista: true });
+                        
+                        endingByMonth[monthKey].items.push({
+                            name: purchase.itemName,
+                            card: purchase.card,
+                            installmentValue: purchase.totalValue,
+                            totalValue: purchase.totalValue,
+                            installments: purchase.installments,
+                            isVista: true
+                        });
                         endingByMonth[monthKey].total += purchase.totalValue;
                     }
                 } else {
+                    // Para compras parceladas, só mostra no mês da última parcela
                     const lastInstallmentDate = parseInstallmentDate(purchase.lastInstallment);
                     const monthKey = `${lastInstallmentDate.getFullYear()}-${String(lastInstallmentDate.getMonth() + 1).padStart(2, '0')}`;
+                    
                     if (!endingByMonth[monthKey]) {
-                        endingByMonth[monthKey] = { date: lastInstallmentDate, displayName: purchase.lastInstallment, items: [], total: 0 };
+                        endingByMonth[monthKey] = {
+                            date: lastInstallmentDate,
+                            displayName: purchase.lastInstallment,
+                            items: [],
+                            total: 0
+                        };
                     }
+                    
                     const installmentValue = purchase.totalValue / purchase.installments;
-                    endingByMonth[monthKey].items.push({ name: purchase.itemName, card: purchase.card, installmentValue, totalValue: purchase.totalValue, installments: purchase.installments, isVista: false });
+                    endingByMonth[monthKey].items.push({
+                        name: purchase.itemName,
+                        card: purchase.card,
+                        installmentValue: installmentValue,
+                        totalValue: purchase.totalValue,
+                        installments: purchase.installments,
+                        isVista: false
+                    });
                     endingByMonth[monthKey].total += installmentValue;
                 }
             });
 
-            const sortedMonths = Object.keys(endingByMonth).sort((a,b) => endingByMonth[a].date - endingByMonth[b].date);
+            // Ordena os meses
+            const sortedMonths = Object.keys(endingByMonth).sort((a, b) => {
+                return endingByMonth[a].date - endingByMonth[b].date;
+            });
+
+            if (sortedMonths.length === 0) {
+                endingContainer.innerHTML = `
+                    <div class="empty-history">
+                        <p>Nenhuma parcela registrada ainda! 📋</p>
+                    </div>
+                `;
+                return;
+            }
+
             const endingHTML = sortedMonths.map(monthKey => {
                 const monthData = endingByMonth[monthKey];
                 const monthDate = monthData.date;
                 const isCurrentMonth = monthDate.getMonth() === currentMonth && monthDate.getFullYear() === currentYear;
                 const isPastMonth = monthDate < new Date(currentYear, currentMonth, 1);
+                
                 let headerClass = 'month-header';
                 let statusText = 'Termina';
-                if (isCurrentMonth) { headerClass += ' current-month'; statusText='Termina neste mês'; }
-                if (isPastMonth) { headerClass += ' past-month'; statusText='Já terminou'; }
+                
+                if (isCurrentMonth) {
+                    headerClass += ' current-month';
+                    statusText = 'Termina este mês';
+                } else if (isPastMonth) {
+                    headerClass += ' past-month';
+                    statusText = 'Já terminou';
+                }
+
                 const itemsHTML = monthData.items.map(item => `
                     <div class="installment-item">
-                        <div>
-                            <span class="installment-name">${item.name}</span>
-                            <span class="installment-details"> - ${item.card} - ${item.installments === 0 ? 'À vista' : item.installments + 'x'}</span>
+                        <div class="installment-info">
+                            <div class="installment-name">${item.name}</div>
+                            <div class="installment-details">
+                                ${item.card} • ${item.isVista ? 'À Vista' : item.installments + 'x de R$ ' + Math.round(item.installmentValue).toLocaleString('pt-BR')}
+                                ${isCurrentMonth ? '<span class="status-badge status-current">TERMINA AGORA</span>' : ''}
+                                ${isPastMonth ? '<span class="status-badge status-finished">FINALIZADA</span>' : ''}
+                            </div>
                         </div>
-                        <div class="installment-value">R$ ${Math.round(item.installmentValue).toLocaleString('pt-BR')}</div>
+                        <div class="installment-value">
+                            R$ ${Math.round(item.installmentValue).toLocaleString('pt-BR')}
+                        </div>
                     </div>
                 `).join('');
+
                 return `
                     <div class="month-group">
-                        <div class="${headerClass}">${monthDate.toLocaleDateString('pt-BR',{month:'long',year:'numeric'})}</div>
-                        ${itemsHTML}
-                        <div class="installment-item"><strong>Total:</strong> R$ ${Math.round(monthData.total).toLocaleString('pt-BR')}</div>
+                        <div class="${headerClass}">
+                            <span>${monthData.displayName} - ${statusText}</span>
+                            <span class="month-total">Total: R$ ${Math.round(monthData.total).toLocaleString('pt-BR')}</span>
+                        </div>
+                        <div class="installment-list">
+                            ${itemsHTML}
+                        </div>
                     </div>
                 `;
             }).join('');
+
             endingContainer.innerHTML = endingHTML;
         }
 
+        // Função para excluir uma compra
         function deletePurchase(index) {
-            purchases.splice(index,1);
-            savePurchases();
-            renderAll();
+            if (confirm('Tem certeza que deseja excluir esta compra?')) {
+                purchases.splice(index, 1);
+                savePurchases();
+                recalculateChartData();
+                updateCharts();
+                renderPurchaseHistory();
+                renderMonthSummary();
+                renderEndingInstallments();
+            }
         }
 
-        function renderAll() {
+        // Função para inicializar a aplicação
+        function initializeApp() {
+            recalculateChartData();
+            updateCharts();
             renderPurchaseHistory();
             renderMonthSummary();
             renderEndingInstallments();
         }
 
-        // ================== Eventos ==================
-        document.getElementById('financeForm').addEventListener('submit', function(e){
+        // Manipulador do formulário
+        document.getElementById('financeForm').addEventListener('submit', function(e) {
             e.preventDefault();
+            
             const itemName = document.getElementById('itemName').value;
             const totalValue = parseFloat(document.getElementById('totalValue').value);
             const category = document.getElementById('category').value;
             const card = document.getElementById('card').value;
+            const billClosed = document.getElementById('billClosed').value;
             const purchaseMonth = document.getElementById('purchaseMonth').value;
             const installments = parseInt(document.getElementById('installments').value);
-            const billClosed = document.getElementById('billClosed').value;
-
-            const { firstInstallment, lastInstallment } = calculateInstallmentDates(billClosed, installments, purchaseMonth);
-            const registrationDate = new Date().toLocaleDateString('pt-BR');
-
-            purchases.push({ itemName, totalValue, category, card, purchaseMonth, installments, billClosed, firstInstallment, lastInstallment, registrationDate });
+            
+            // Calcula as datas das parcelas
+            const dates = calculateInstallmentDates(billClosed, installments, purchaseMonth);
+            
+            // Cria o objeto da compra
+            const purchase = {
+                id: Date.now(),
+                itemName,
+                totalValue,
+                category,
+                card,
+                billClosed,
+                purchaseMonth,
+                installments,
+                firstInstallment: dates.firstInstallment,
+                lastInstallment: dates.lastInstallment,
+                registrationDate: new Date().toLocaleDateString('pt-BR')
+            };
+            
+            // Adiciona a compra ao array
+            purchases.push(purchase);
+            
+            // Salva no localStorage
             savePurchases();
-            renderAll();
-
+            
+            // Recalcula e atualiza os gráficos
+            recalculateChartData();
+            updateCharts();
+            
+            // Atualiza o histórico
+            renderPurchaseHistory();
+            
+            // Atualiza o resumo mensal
+            renderMonthSummary();
+            
+            // Atualiza as parcelas que terminam
+            renderEndingInstallments();
+            
+            // Exibe o resultado
             const resultContainer = document.getElementById('resultContainer');
             const resultDetails = document.getElementById('resultDetails');
+            
             resultDetails.innerHTML = `
-                <p><strong>Item:</strong> ${itemName}</p>
-                <p><strong>Valor:</strong> R$ ${totalValue.toLocaleString('pt-BR')}</p>
-                <p><strong>Parcelas:</strong> ${installments === 0 ? 'À vista' : installments + 'x de R$ ' + Math.round(totalValue/installments).toLocaleString('pt-BR')}</p>
+                <div class="result-item">
+                    <strong>Item:</strong>
+                    ${itemName}
+                </div>
+                <div class="result-item">
+                    <strong>Valor Total:</strong>
+                    R$ ${Math.round(totalValue).toLocaleString('pt-BR')}
+                </div>
+                <div class="result-item">
+                    <strong>Categoria:</strong>
+                    ${category}
+                </div>
+                <div class="result-item">
+                    <strong>Cartão:</strong>
+                    ${card}
+                </div>
+                <div class="result-item">
+                    <strong>Mês da Compra:</strong>
+                    ${new Date(purchaseMonth + '-01').toLocaleDateString('pt-BR', {month: 'long', year: 'numeric'})}
+                </div>
+                <div class="result-item">
+                    <strong>Parcelas:</strong>
+                    ${installments === 0 ? 'À Vista' : installments + 'x de R$ ' + Math.round(totalValue/installments).toLocaleString('pt-BR')}
+                </div>
+                <div class="result-item">
+                    <strong>Primeira Parcela:</strong>
+                    ${dates.firstInstallment}
+                </div>
+                <div class="result-item">
+                    <strong>Última Parcela:</strong>
+                    ${dates.lastInstallment}
+                </div>
             `;
+            
             resultContainer.style.display = 'block';
+            
+            // Limpa o formulário
             this.reset();
+            
+            // Scroll suave para o histórico
+            document.querySelector('.history-container').scrollIntoView({ behavior: 'smooth' });
         });
 
-        // ================== Inicialização ==================
-        renderAll();
+        // Inicializa a aplicação quando a página carrega
+        window.addEventListener('load', initializeApp);
     </script>
-</body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'98a7cd19751a1ab7',t:'MTc1OTc4MTQxNi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
